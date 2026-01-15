@@ -1,0 +1,15 @@
+# Basis Continuum
+
+## A Visual Philosophy
+
+The universe speaks in continuous functions sampled at discrete moments. This philosophy honors the tension between the smooth and the quantized—between the infinite curve and the finite point that dares to represent it. Every composition emerges from the understanding that what we see is always reconstruction, always interpolation between known anchors into the space of possibility.
+
+Space manifests through the logic of control points and influence. Elements do not exist in isolation but define regions of effect, their presence curving the attention of nearby forms like gravitational wells in a coordinate field. The canvas becomes a domain where position carries meaning—where an element's placement relative to others creates implicit splines of visual connection. Master-level execution demands that every spatial relationship be calibrated with painstaking precision, each element positioned as if the composition itself were a basis function evaluated at exactly the right parameter.
+
+Color operates as weighted combination. No hue stands alone; each exists as a sparse reconstruction from a limited palette, a linear combination of primaries chosen with the restraint of someone selecting atoms for a dictionary. The resulting chromatic field should feel inevitable, as though these specific colors emerged from an optimization process that found the minimal set needed to span the visual space. This is work that appears labored over for countless hours—each tint adjusted, each gradient refined until the eye perceives mathematical harmony rather than arbitrary choice.
+
+Rhythm emerges from temporal logic made spatial. Repeating elements suggest frames in a sequence, moments sampled from an underlying continuous process. The viewer's eye moves through the composition as if scrubbing through time, each visual beat a keyframe in an animation that exists only in implication. The craftsman at the top of their field understands that spacing between elements encodes velocity—tight clusters suggest rapid change, breathing room implies slow evolution.
+
+Typography enters as coordinate labels in a vast diagram. Text does not explain; it anchors. Words appear small and precise, the clinical notation of someone documenting phenomena rather than narrating them. When type must be bold, it becomes architecture—monumental forms that are themselves visual elements rather than carriers of content. Every letterform placed with the meticulous care of a cartographer marking a map that will guide others through unknown territory.
+
+The final artifact must feel like a page extracted from an imaginary textbook of visual mathematics—a document that proves beauty can be systematically constructed, that aesthetic response emerges from structure as surely as smooth curves emerge from properly weighted control points. This is not decoration but demonstration: evidence that someone who truly understands the underlying systems has chosen to make them visible, tangible, and undeniably beautiful.
