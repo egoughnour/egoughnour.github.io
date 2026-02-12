@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Erik Goughnour | Signal Processing & Numerical Methods</title>
-    <meta name="description" content="Erik Goughnour - Signal processing, numerical methods, and systems engineering. Interactive demos and research projects.">
+    <title>Erik Goughnour</title>
+    <meta name="description" content="Erik Goughnour — systems engineering, formal methods, and numerical computing. Static analysis, verified synthesis, interactive demos, and research tools.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -36,6 +36,7 @@
         }
 
         .hero {
+            position: relative;
             width: 100%;
             max-height: 500px;
             overflow: hidden;
@@ -45,6 +46,42 @@
             width: 100%;
             height: auto;
             display: block;
+        }
+
+        .hero-mask-bottom {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 55%;
+            background: linear-gradient(to top,
+                var(--deep-navy) 0%,
+                rgba(15, 23, 42, 0.9) 35%,
+                rgba(15, 23, 42, 0.4) 65%,
+                transparent 100%
+            );
+        }
+
+        .hero-mask-left {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 42%;
+            height: 100%;
+            background: linear-gradient(to right,
+                rgba(15, 23, 42, 0.35) 0%,
+                transparent 100%
+            );
+        }
+
+        .hero-subtitle {
+            position: absolute;
+            bottom: 12%;
+            left: 3.5%;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: clamp(0.55rem, 1.1vw, 0.85rem);
+            color: var(--muted-slate);
+            letter-spacing: 0.05em;
         }
 
         main {
@@ -196,11 +233,68 @@
 </head>
 <body>
     <header class="hero">
-        <img src="assets/hero_banner.png" alt="Erik Goughnour - Signal Processing and Numerical Methods">
+        <img src="assets/hero_banner.png" alt="Erik Goughnour">
+        <div class="hero-mask-bottom"></div>
+        <div class="hero-mask-left"></div>
+        <span class="hero-subtitle">systems engineering&nbsp; /&nbsp; formal methods&nbsp; /&nbsp; numerical computing</span>
     </header>
 
     <main>
         <section class="section-header">
+            <h2>Code Intelligence</h2>
+            <p>Static analysis, formal verification, and verified synthesis</p>
+        </section>
+
+        <div class="projects-grid">
+            <a href="https://complexity-hints.readthedocs.io/" class="project-card" target="_blank" rel="noopener">
+                <img src="assets/card_complexity.png" alt="Complexity Hints">
+                <div class="project-card-content">
+                    <h3>Complexity Hints</h3>
+                    <p>First-class algorithmic complexity analysis for .NET. Extracts recurrences from C# via Roslyn and solves them symbolically using the Master Theorem and Akra-Bazzi.</p>
+                    <span class="project-tag teal">c#</span>
+                    <span class="project-tag teal">roslyn</span>
+                </div>
+            </a>
+
+            <a href="https://curate-ipsum.readthedocs.io/" class="project-card" target="_blank" rel="noopener">
+                <img src="assets/card_curate.png" alt="Curate Ipsum">
+                <div class="project-card-content">
+                    <h3>Curate Ipsum</h3>
+                    <p>Graph-spectral MCP server for verified code synthesis. Bridges LLM output with formal verification through mutation testing, belief revision, and CEGIS.</p>
+                    <span class="project-tag indigo">python</span>
+                    <span class="project-tag indigo">mcp</span>
+                </div>
+            </a>
+        </div>
+
+        <div class="links-grid" style="margin-bottom: 3rem;">
+            <a href="https://complexity-hints.readthedocs.io/" target="_blank" rel="noopener">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+                </svg>
+                complexity-hints docs
+            </a>
+            <a href="https://github.com/egoughnour/complexity-hints" target="_blank" rel="noopener">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                </svg>
+                complexity-hints repo
+            </a>
+            <a href="https://curate-ipsum.readthedocs.io/" target="_blank" rel="noopener">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+                </svg>
+                curate-ipsum docs
+            </a>
+            <a href="https://github.com/egoughnour/curate-ipsum" target="_blank" rel="noopener">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                </svg>
+                curate-ipsum repo
+            </a>
+        </div>
+
+        <section class="section-header" style="margin-top: 2rem;">
             <h2>Interactive Demos</h2>
             <p>Explorations in basis functions, sparse reconstruction, and signal processing</p>
         </section>
@@ -260,7 +354,7 @@
         </section>
 
         <div class="projects-grid">
-            <a href="panel-bie/" class="project-card">
+            <a href="https://github.com/egoughnour/panel-bie" class="project-card" target="_blank" rel="noopener">
                 <div class="project-card-content">
                     <h3>panel-bie</h3>
                     <p>Panel-based Boundary Integral Equation (BIE) solver for computational physics and numerical PDEs.</p>
@@ -269,7 +363,7 @@
                 </div>
             </a>
 
-            <a href="superellipse/" class="project-card">
+            <a href="https://github.com/egoughnour/superellipse" class="project-card" target="_blank" rel="noopener">
                 <div class="project-card-content">
                     <h3>superellipse</h3>
                     <p>Generalized superellipse geometry library for parametric curves and shape modeling.</p>
@@ -278,7 +372,7 @@
                 </div>
             </a>
 
-            <a href="harmonic-measure/" class="project-card">
+            <a href="https://github.com/egoughnour/harmonic-measure" class="project-card" target="_blank" rel="noopener">
                 <div class="project-card-content">
                     <h3>harmonic-measure</h3>
                     <p>Harmonic measure computation and boundary crowding diagnostics for conformal mapping analysis.</p>
