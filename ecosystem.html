@@ -160,8 +160,10 @@ svg { width: 100%; height: 100%; }
         <text x="60" y="370" letter-spacing="0.12em">COMPLEX ANALYSIS</text>
         <text x="700" y="370" letter-spacing="0.12em">TOOLS &amp; APPLICATIONS</text>
         <text x="300" y="680" letter-spacing="0.12em">NUMERICAL LIBRARIES</text>
-        <text x="300" y="830" letter-spacing="0.12em">INTERACTIVE DEMOS</text>
+        <text x="300" y="780" letter-spacing="0.12em">APPROXIMATION FRAMEWORKS</text>
+        <text x="300" y="890" letter-spacing="0.12em">INTERACTIVE DEMOS</text>
         <text x="1565" y="290" letter-spacing="0.12em" fill="#64748b">MCP CONSUMERS</text>
+        <text x="1730" y="355" letter-spacing="0.12em" fill="#64748b">CONTAINER RUNTIMES</text>
     </g>
     <!-- Edges will be inserted here by JS -->
     <g id="edges"></g>
@@ -175,6 +177,10 @@ svg { width: 100%; height: 100%; }
     <g id="targets"></g>
     <!-- MCP consumer badges -->
     <g id="consumers"></g>
+    <!-- GHCR fanout edges (hub→container runtimes) -->
+    <g id="ghcr-fanout"></g>
+    <!-- GHCR consumer badges -->
+    <g id="ghcr-consumers"></g>
 </g>
 </svg>
 </div>
@@ -223,10 +229,12 @@ const data = {
         { id: 'harmonic-measure', label: 'harmonic-measure', x: 690, y: 720, lang: 'python',
           desc: 'Harmonic measure & boundary crowding diagnostics' },
 
+        // Approximation Frameworks
+        { id: 'extensible-splines', label: 'extensible-splines', x: 400, y: 820, lang: 'python',
+          desc: 'Generalized spline framework — custom kernels subsume Hermite, Bézier, B-spline via lambda/matrix interface' },
+
         // Demos
-        { id: 'extensible-splines', label: 'extensible-splines', x: 370, y: 880, lang: 'python',
-          desc: 'Interactive B-spline basis function explorer (marimo)' },
-        { id: 'mosaic-basis', label: 'mosaic-basis / temporal-omp', x: 620, y: 880, lang: 'python',
+        { id: 'mosaic-basis', label: 'mosaic-basis / temporal-omp', x: 500, y: 930, lang: 'python',
           desc: 'Sparse frame reconstruction via OMP (marimo)' },
     ],
 
@@ -236,9 +244,9 @@ const data = {
         { id: 'gh-actions', label: 'Actions', x: 1220, y: 190, color: '#2088FF' },
         { id: 'pypi', label: 'PyPI', x: 1220, y: 370, color: '#3775A9' },
         { id: 'rtd', label: 'ReadTheDocs', x: 1380, y: 280, color: '#2980B9' },
-        { id: 'ghcr', label: 'GHCR', x: 1380, y: 460, color: '#2496ED' },
+        { id: 'ghcr', label: 'GHCR', x: 1380, y: 460, color: '#2496ED', isHub: true },
         { id: 'mcp-reg', label: 'MCP', x: 1220, y: 460, color: '#14b8a6', isHub: true },
-        { id: 'gh-pages', label: 'GH Pages', x: 1220, y: 830, color: '#6e7681' },
+        { id: 'gh-pages', label: 'GH Pages', x: 1220, y: 640, color: '#6e7681' },
         { id: 'go-pkg', label: 'pkg.go.dev', x: 1220, y: 550, color: '#00ADD8' },
         { id: 'npm', label: 'npm', x: 1380, y: 550, color: '#CB3837' },
     ],
@@ -250,6 +258,13 @@ const data = {
         { id: 'claude-code',    label: 'Claude Code',    x: 1620, y: 465, color: '#d97706' },
         { id: 'openai-agents',  label: 'OpenAI',         x: 1620, y: 525, color: '#10a37f' },
         { id: 'cursor',         label: 'Cursor',         x: 1620, y: 585, color: '#8b5cf6' },
+    ],
+
+    // Container consumers — second hop from GHCR hub
+    ghcrConsumers: [
+        { id: 'docker',     label: 'Docker',     x: 1780, y: 400, color: '#0db7ed' },
+        { id: 'kubernetes', label: 'Kubernetes', x: 1780, y: 460, color: '#326CE5' },
+        { id: 'cloud-run',  label: 'Cloud Run',  x: 1780, y: 520, color: '#f97316' },
     ],
 
     // repo → distribution target
@@ -277,6 +292,7 @@ const data = {
         ['panel-bie', 'pypi'],
         ['superellipse', 'pypi'],
         ['harmonic-measure', 'pypi'],
+        ['extensible-splines', 'pypi'],
         ['extensible-splines', 'gh-pages'],
         ['mosaic-basis', 'gh-pages'],
         ['massive-context-mcp', 'mcp-reg'],
@@ -315,6 +331,8 @@ const mcpFanoutG = document.getElementById('mcp-fanout');
 const reposG = document.getElementById('repos');
 const targetsG = document.getElementById('targets');
 const consumersG = document.getElementById('consumers');
+const ghcrFanoutG = document.getElementById('ghcr-fanout');
+const ghcrConsumersG = document.getElementById('ghcr-consumers');
 const gridG = document.getElementById('grid');
 
 // Draw background grid
@@ -389,6 +407,31 @@ if (mcpHub) {
             'marker-end': 'url(#arrow)',
         }, g);
         el('title', {}, g).textContent = `MCP protocol → ${consumer.label}`;
+    });
+}
+
+// Draw GHCR fanout edges (GHCR hub → container runtimes)
+const ghcrHub = targetMap['ghcr'];
+if (ghcrHub) {
+    const hubW = Math.max('GHCR'.length * 9 + 24, 80);
+    data.ghcrConsumers.forEach(consumer => {
+        const sx = ghcrHub.x + hubW / 2 + 5;
+        const sy = ghcrHub.y;
+        const cw = Math.max(consumer.label.length * 8.5 + 24, 100);
+        const ex = consumer.x - cw / 2 - 5;
+        const ey = consumer.y;
+        const cx1 = sx + (ex - sx) * 0.4, cy1 = sy;
+        const cx2 = sx + (ex - sx) * 0.6, cy2 = ey;
+
+        const g = el('g', { class: 'edge ghcr-fanout-edge', opacity: '0.2', 'data-consumer': consumer.id }, ghcrFanoutG);
+        el('path', {
+            d: `M${sx},${sy} C${cx1},${cy1} ${cx2},${cy2} ${ex},${ey}`,
+            fill: 'none',
+            stroke: consumer.color,
+            'stroke-width': '1.5',
+            'marker-end': 'url(#arrow)',
+        }, g);
+        el('title', {}, g).textContent = `GHCR → ${consumer.label}`;
     });
 }
 
@@ -520,8 +563,9 @@ data.targets.forEach(t => {
         }, g).textContent = `×${count}`;
     }
 
-    // Hub "protocol" label
+    // Hub sub-label
     if (t.isHub) {
+        const hubLabel = t.id === 'mcp-reg' ? 'protocol' : 'registry';
         el('text', {
             x: 0, y: h/2 + 14,
             'font-family': 'JetBrains Mono, monospace',
@@ -529,7 +573,7 @@ data.targets.forEach(t => {
             fill: t.color,
             'text-anchor': 'middle',
             opacity: '0.6',
-        }, g).textContent = 'protocol';
+        }, g).textContent = hubLabel;
     }
 });
 
@@ -566,6 +610,41 @@ data.mcpConsumers.forEach(c => {
     }, g).textContent = c.label;
 
     el('title', {}, g).textContent = `MCP consumer: ${c.label}`;
+});
+
+// Draw GHCR consumer badges
+data.ghcrConsumers.forEach(c => {
+    const g = el('g', { class: 'consumer-badge', transform: `translate(${c.x}, ${c.y})` }, ghcrConsumersG);
+    const w = Math.max(c.label.length * 8.5 + 24, 100);
+    const h = 28;
+
+    // Subtle glow
+    el('rect', {
+        x: -w/2 - 2, y: -h/2 - 2, width: w + 4, height: h + 4, rx: 8,
+        fill: c.color, opacity: '0.05',
+    }, g);
+
+    // Badge background
+    el('rect', {
+        x: -w/2, y: -h/2, width: w, height: h, rx: 6,
+        fill: '#1e293b', stroke: c.color, 'stroke-width': '1.2',
+    }, g);
+
+    // Colored left accent bar
+    el('rect', {
+        x: -w/2, y: -h/2 + 3, width: 3, height: h - 6, rx: 1.5,
+        fill: c.color, opacity: '0.8',
+    }, g);
+
+    // Label
+    el('text', {
+        x: -w/2 + 14, y: 4,
+        'font-family': 'JetBrains Mono, monospace',
+        'font-size': '9',
+        fill: '#e2e8f0',
+    }, g).textContent = c.label;
+
+    el('title', {}, g).textContent = `Container runtime: ${c.label}`;
 });
 
 // Legend
@@ -609,17 +688,19 @@ el('line', { x1: 0, y1: 181, x2: 30, y2: 181, stroke: '#3775A9', 'stroke-width':
 el('text', { x: 38, y: 185, 'font-family': 'JetBrains Mono, monospace', 'font-size': '8.5', fill: '#94a3b8' }, legendG).textContent = 'ships to registry';
 el('line', { x1: 0, y1: 199, x2: 30, y2: 199, stroke: '#d97706', 'stroke-width': '1.5' }, legendG);
 el('text', { x: 38, y: 203, 'font-family': 'JetBrains Mono, monospace', 'font-size': '8.5', fill: '#94a3b8' }, legendG).textContent = 'MCP fanout';
+el('line', { x1: 0, y1: 217, x2: 30, y2: 217, stroke: '#0db7ed', 'stroke-width': '1.5' }, legendG);
+el('text', { x: 38, y: 221, 'font-family': 'JetBrains Mono, monospace', 'font-size': '8.5', fill: '#94a3b8' }, legendG).textContent = 'container fanout';
 
 el('text', {
-    x: 0, y: 230,
+    x: 0, y: 248,
     'font-family': 'JetBrains Mono, monospace',
     'font-size': '8',
     fill: '#475569',
     'letter-spacing': '0.1em',
 }, legendG).textContent = 'TAGS';
-el('rect', { x: 2, y: 240, width: 38, height: 14, rx: 3, fill: '#14b8a6', opacity: '0.15' }, legendG);
-el('text', { x: 21, y: 250, 'font-family': 'JetBrains Mono, monospace', 'font-size': '7', fill: '#14b8a6', 'text-anchor': 'middle', 'font-weight': '600' }, legendG).textContent = 'MCPB';
-el('text', { x: 48, y: 250, 'font-family': 'JetBrains Mono, monospace', 'font-size': '8.5', fill: '#94a3b8' }, legendG).textContent = 'MCP Builder server';
+el('rect', { x: 2, y: 258, width: 38, height: 14, rx: 3, fill: '#14b8a6', opacity: '0.15' }, legendG);
+el('text', { x: 21, y: 268, 'font-family': 'JetBrains Mono, monospace', 'font-size': '7', fill: '#14b8a6', 'text-anchor': 'middle', 'font-weight': '600' }, legendG).textContent = 'MCPB';
+el('text', { x: 48, y: 268, 'font-family': 'JetBrains Mono, monospace', 'font-size': '8.5', fill: '#94a3b8' }, legendG).textContent = 'MCP Builder server';
 
 // ── Pan & Zoom ──────────────────────────────────────────────────
 let scale = 1, panX = 0, panY = 0;
@@ -723,8 +804,9 @@ document.getElementById('zoomOut').onclick = () => { scale = Math.max(0.3, scale
 document.getElementById('zoomReset').onclick = () => { scale = 1; panX = 0; panY = 0; applyTransform(); };
 
 // ── Highlight connected edges on repo hover ─────────────────────
-// Build set of repos that distribute to MCP (for two-hop highlight)
+// Build sets of repos that distribute to hubs (for two-hop highlight)
 const mcpRepos = new Set(data.distributions.filter(d => d[1] === 'mcp-reg').map(d => d[0]));
+const ghcrRepos = new Set(data.distributions.filter(d => d[1] === 'ghcr').map(d => d[0]));
 
 document.querySelectorAll('.repo-node').forEach((node, i) => {
     const repo = data.repos[i];
@@ -733,6 +815,7 @@ document.querySelectorAll('.repo-node').forEach((node, i) => {
         edgesG.querySelectorAll('.edge').forEach(e => e.setAttribute('opacity', '0.06'));
         depsG.querySelectorAll('.edge').forEach(e => e.setAttribute('opacity', '0.06'));
         mcpFanoutG.querySelectorAll('.edge').forEach(e => e.setAttribute('opacity', '0.06'));
+        ghcrFanoutG.querySelectorAll('.edge').forEach(e => e.setAttribute('opacity', '0.06'));
 
         // Highlight connected distribution edges
         edgesG.querySelectorAll('.edge').forEach(e => {
@@ -748,15 +831,20 @@ document.querySelectorAll('.repo-node').forEach((node, i) => {
             }
         });
 
-        // If this repo distributes to MCP, also light up the fanout
+        // If this repo distributes to MCP, also light up MCP fanout
         if (mcpRepos.has(repo.id)) {
             mcpFanoutG.querySelectorAll('.edge').forEach(e => e.setAttribute('opacity', '0.7'));
+        }
+        // If this repo distributes to GHCR, also light up container fanout
+        if (ghcrRepos.has(repo.id)) {
+            ghcrFanoutG.querySelectorAll('.edge').forEach(e => e.setAttribute('opacity', '0.7'));
         }
     });
     node.addEventListener('mouseleave', () => {
         edgesG.querySelectorAll('.edge').forEach(e => e.setAttribute('opacity', '0.25'));
         depsG.querySelectorAll('.edge').forEach(e => e.setAttribute('opacity', '0.35'));
         mcpFanoutG.querySelectorAll('.edge').forEach(e => e.setAttribute('opacity', '0.2'));
+        ghcrFanoutG.querySelectorAll('.edge').forEach(e => e.setAttribute('opacity', '0.2'));
     });
 });
 </script>
