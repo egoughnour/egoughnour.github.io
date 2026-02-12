@@ -174,6 +174,63 @@
             color: var(--warm-accent);
         }
 
+        .ecosystem-link {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 1.5rem;
+            margin-bottom: 2rem;
+            background: var(--card-bg);
+            border-radius: 10px;
+            border: 1px solid rgba(99, 102, 241, 0.15);
+            text-decoration: none;
+            color: inherit;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .ecosystem-link:hover {
+            border-color: rgba(99, 102, 241, 0.4);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .ecosystem-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--soft-slate);
+        }
+
+        .ecosystem-targets {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        .eco-badge {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6rem;
+            font-weight: 600;
+            color: #fff;
+            padding: 0.15rem 0.45rem;
+            border-radius: 3px;
+            letter-spacing: 0.02em;
+        }
+
+        .eco-arrow {
+            color: var(--muted-slate);
+            font-size: 1rem;
+            margin-left: 0.3rem;
+        }
+
+        @media (max-width: 768px) {
+            .ecosystem-link {
+                flex-direction: column;
+                gap: 0.75rem;
+                align-items: flex-start;
+            }
+        }
+
         .links-section {
             border-top: 1px solid var(--card-bg);
             padding-top: 2rem;
@@ -293,6 +350,21 @@
                 curate-ipsum repo
             </a>
         </div>
+
+        <a href="ecosystem.html" class="ecosystem-link">
+            <span class="ecosystem-label">Explore the full project ecosystem</span>
+            <span class="ecosystem-targets">
+                <span class="eco-badge" style="background:#004880">NuGet</span>
+                <span class="eco-badge" style="background:#3775A9">PyPI</span>
+                <span class="eco-badge" style="background:#007ACC">VS Code</span>
+                <span class="eco-badge" style="background:#2088FF">Actions</span>
+                <span class="eco-badge" style="background:#14b8a6">MCP</span>
+                <span class="eco-badge" style="background:#2496ED">GHCR</span>
+                <span class="eco-badge" style="background:#2980B9">ReadTheDocs</span>
+                <span class="eco-badge" style="background:#00ADD8">pkg.go.dev</span>
+                <span class="eco-arrow">&rarr;</span>
+            </span>
+        </a>
 
         <section class="section-header" style="margin-top: 2rem;">
             <h2>Interactive Demos</h2>

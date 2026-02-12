@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ecosystem — Erik Goughnour</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+    --navy: #0f172a;
+    --card: #1e293b;
+    --slate: #94a3b8;
+    --muted: #64748b;
+    --teal: #14b8a6;
+    --indigo: #6366f1;
+    --lavender: #a5b4fc;
+    --gold: #fbbf24;
+    --white: #f8fafc;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    background: var(--navy);
+    color: var(--white);
+    font-family: 'Inter', sans-serif;
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+}
+#container {
+    width: 100%;
+    height: 100%;
+    cursor: grab;
+    position: relative;
+}
+#container.dragging { cursor: grabbing; }
+svg { width: 100%; height: 100%; }
+
+/* Zoom controls */
+.controls {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    z-index: 10;
+}
+.controls button {
+    width: 36px; height: 36px;
+    border: 1px solid var(--muted);
+    border-radius: 6px;
+    background: var(--card);
+    color: var(--slate);
+    font-size: 1.1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'JetBrains Mono', monospace;
+    transition: all 0.15s;
+}
+.controls button:hover {
+    border-color: var(--teal);
+    color: var(--white);
+}
+.back-link {
+    position: fixed;
+    top: 1.2rem;
+    left: 1.5rem;
+    color: var(--muted);
+    text-decoration: none;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    z-index: 10;
+    transition: color 0.2s;
+}
+.back-link:hover { color: var(--white); }
+.title-bar {
+    position: fixed;
+    top: 1.2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    z-index: 10;
+}
+.hint {
+    position: fixed;
+    bottom: 1.5rem;
+    left: 1.5rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--muted);
+    opacity: 0.6;
+    z-index: 10;
+}
+
+/* Edge hover */
+.edge { transition: opacity 0.2s; }
+.edge:hover { opacity: 1 !important; }
+.edge:hover path { stroke-width: 2.5; }
+
+/* Node hover */
+.repo-node { cursor: pointer; transition: filter 0.2s; }
+.repo-node:hover { filter: brightness(1.3); }
+.target-badge { cursor: default; }
+</style>
+</head>
+<body>
+<a href="index.html" class="back-link">&larr; portfolio</a>
+<div class="title-bar">project ecosystem &amp; distribution</div>
+<div class="hint">scroll to zoom · drag to pan · double-click to reset</div>
+<div class="controls">
+    <button id="zoomIn" title="Zoom in">+</button>
+    <button id="zoomOut" title="Zoom out">&minus;</button>
+    <button id="zoomReset" title="Reset view">⌂</button>
+</div>
+<div id="container">
+<svg id="graph" viewBox="0 0 1700 1050">
+<defs>
+    <marker id="arrow" viewBox="0 0 10 6" refX="9" refY="3"
+            markerWidth="8" markerHeight="6" orient="auto-start-reverse">
+        <path d="M0,0 L10,3 L0,6 Z" fill="var(--muted)" opacity="0.5"/>
+    </marker>
+    <marker id="arrow-teal" viewBox="0 0 10 6" refX="9" refY="3"
+            markerWidth="8" markerHeight="6" orient="auto-start-reverse">
+        <path d="M0,0 L10,3 L0,6 Z" fill="var(--teal)" opacity="0.6"/>
+    </marker>
+    <marker id="arrow-indigo" viewBox="0 0 10 6" refX="9" refY="3"
+            markerWidth="8" markerHeight="6" orient="auto-start-reverse">
+        <path d="M0,0 L10,3 L0,6 Z" fill="var(--indigo)" opacity="0.6"/>
+    </marker>
+    <filter id="glow">
+        <feGaussianBlur stdDeviation="3" result="blur"/>
+        <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+</defs>
+<g id="world">
+    <!-- Background grid -->
+    <g id="grid" opacity="0.15">
+    </g>
+    <!-- Group labels -->
+    <g id="group-labels" font-family="JetBrains Mono, monospace" font-size="9" fill="#475569" text-anchor="start">
+        <text x="305" y="62" letter-spacing="0.12em" text-transform="uppercase">DOCUMENTATION INFRASTRUCTURE</text>
+        <text x="305" y="218" letter-spacing="0.12em">CODE INTELLIGENCE</text>
+        <text x="60" y="370" letter-spacing="0.12em">COMPLEX ANALYSIS</text>
+        <text x="700" y="370" letter-spacing="0.12em">TOOLS &amp; APPLICATIONS</text>
+        <text x="300" y="680" letter-spacing="0.12em">NUMERICAL LIBRARIES</text>
+        <text x="300" y="830" letter-spacing="0.12em">INTERACTIVE DEMOS</text>
+    </g>
+    <!-- Edges will be inserted here by JS -->
+    <g id="edges"></g>
+    <!-- Dependency edges (repo→repo) -->
+    <g id="deps"></g>
+    <!-- Repo nodes -->
+    <g id="repos"></g>
+    <!-- Target badges -->
+    <g id="targets"></g>
+</g>
+</svg>
+</div>
+<script>
+const data = {
+    repos: [
+        // Documentation Infrastructure
+        { id: 'mkdocs-sharp', label: 'mkdocs-sharp', x: 370, y: 100, lang: 'csharp',
+          desc: 'MSBuild task & NuGet package for XML→Markdown doc generation' },
+        { id: 'dotnet-mkdocs-material', label: 'dotnet-mkdocs-material', x: 600, y: 100, lang: 'action',
+          desc: 'GitHub Action: build .NET docs with MkDocs Material theme' },
+
+        // Code Intelligence
+        { id: 'complexity-hints', label: 'complexity-hints', x: 370, y: 260, lang: 'csharp',
+          desc: 'Roslyn-powered Big-O analysis with Master Theorem & Akra-Bazzi' },
+        { id: 'curate-ipsum', label: 'curate-ipsum', x: 600, y: 260, lang: 'python',
+          desc: 'Graph-spectral MCP server for verified code synthesis via CEGIS' },
+
+        // Complex Analysis
+        { id: 'jordan-curve-app', label: 'jordan-curve-app', x: 180, y: 420, lang: 'devcontainer',
+          desc: 'Dev container for conformal mapping & complex function visualization' },
+        { id: 'analytic-cont-server', label: 'analytic-continuation-server', x: 90, y: 520, lang: 'python',
+          desc: 'MCP server for analytic continuation computations' },
+        { id: 'py-domaincolor', label: 'py-domaincolor', x: 290, y: 520, lang: 'python',
+          desc: 'Domain coloring for complex function visualization' },
+        { id: 'analytic-cont', label: 'analytic-continuation', x: 90, y: 620, lang: 'python',
+          desc: 'Core library for analytic continuation methods' },
+        { id: 'complex-expr', label: 'complex-expr-parser', x: 290, y: 620, lang: 'python',
+          desc: 'Parser for complex-valued mathematical expressions' },
+
+        // Tools
+        { id: 'migrate', label: 'migrate', x: 750, y: 420, lang: 'go',
+          desc: 'Go CLI for database schema diffing & dialect transformation' },
+        { id: 'rag-dashboard', label: 'rag-pipeline-dashboard', x: 750, y: 520, lang: 'typescript',
+          desc: 'Full-stack RAG system with real-time monitoring & WebSocket updates' },
+
+        // Numerical Libraries
+        { id: 'panel-bie', label: 'panel-bie', x: 330, y: 720, lang: 'python',
+          desc: 'Panel-based Boundary Integral Equation solver' },
+        { id: 'superellipse', label: 'superellipse', x: 510, y: 720, lang: 'python',
+          desc: 'Generalized superellipse geometry library' },
+        { id: 'harmonic-measure', label: 'harmonic-measure', x: 690, y: 720, lang: 'python',
+          desc: 'Harmonic measure & boundary crowding diagnostics' },
+
+        // Demos
+        { id: 'extensible-splines', label: 'extensible-splines', x: 370, y: 880, lang: 'python',
+          desc: 'Interactive B-spline basis function explorer (marimo)' },
+        { id: 'mosaic-basis', label: 'mosaic-basis / temporal-omp', x: 620, y: 880, lang: 'python',
+          desc: 'Sparse frame reconstruction via OMP (marimo)' },
+    ],
+
+    targets: [
+        { id: 'nuget', label: 'NuGet', x: 1220, y: 100, color: '#004880' },
+        { id: 'vscode', label: 'VS Code', x: 1380, y: 100, color: '#007ACC' },
+        { id: 'gh-actions', label: 'Actions', x: 1220, y: 190, color: '#2088FF' },
+        { id: 'pypi', label: 'PyPI', x: 1220, y: 370, color: '#3775A9' },
+        { id: 'rtd', label: 'ReadTheDocs', x: 1380, y: 280, color: '#2980B9' },
+        { id: 'ghcr', label: 'GHCR', x: 1380, y: 460, color: '#2496ED' },
+        { id: 'mcp-reg', label: 'MCP', x: 1220, y: 460, color: '#14b8a6' },
+        { id: 'gh-pages', label: 'GH Pages', x: 1220, y: 830, color: '#6e7681' },
+        { id: 'go-pkg', label: 'pkg.go.dev', x: 1220, y: 550, color: '#00ADD8' },
+        { id: 'npm', label: 'npm', x: 1380, y: 550, color: '#CB3837' },
+    ],
+
+    // repo → distribution target
+    distributions: [
+        ['mkdocs-sharp', 'nuget'],
+        ['dotnet-mkdocs-material', 'gh-actions'],
+        ['complexity-hints', 'nuget'],
+        ['complexity-hints', 'vscode'],
+        ['complexity-hints', 'rtd'],
+        ['curate-ipsum', 'pypi'],
+        ['curate-ipsum', 'rtd'],
+        ['curate-ipsum', 'ghcr'],
+        ['curate-ipsum', 'mcp-reg'],
+        ['migrate', 'go-pkg'],
+        ['rag-dashboard', 'npm'],
+        ['analytic-cont-server', 'pypi'],
+        ['analytic-cont-server', 'rtd'],
+        ['py-domaincolor', 'pypi'],
+        ['py-domaincolor', 'rtd'],
+        ['analytic-cont', 'pypi'],
+        ['analytic-cont', 'rtd'],
+        ['complex-expr', 'pypi'],
+        ['complex-expr', 'rtd'],
+        ['panel-bie', 'pypi'],
+        ['superellipse', 'pypi'],
+        ['harmonic-measure', 'pypi'],
+        ['extensible-splines', 'gh-pages'],
+        ['mosaic-basis', 'gh-pages'],
+    ],
+
+    // repo → repo dependencies
+    dependencies: [
+        { from: 'mkdocs-sharp', to: 'dotnet-mkdocs-material', label: 'packaged in' },
+        { from: 'mkdocs-sharp', to: 'complexity-hints', label: 'NuGet ref' },
+        { from: 'dotnet-mkdocs-material', to: 'complexity-hints', label: 'CI action' },
+        { from: 'dotnet-mkdocs-material', to: 'curate-ipsum', label: 'CI action' },
+        { from: 'analytic-cont-server', to: 'jordan-curve-app', label: 'consumed by' },
+        { from: 'py-domaincolor', to: 'jordan-curve-app', label: 'consumed by' },
+        { from: 'analytic-cont', to: 'jordan-curve-app', label: 'consumed by' },
+        { from: 'complex-expr', to: 'jordan-curve-app', label: 'consumed by' },
+    ],
+};
+
+const langColors = {
+    csharp: '#6366f1',
+    python: '#14b8a6',
+    go: '#00ADD8',
+    typescript: '#3178C6',
+    action: '#2088FF',
+    devcontainer: '#fbbf24',
+};
+
+const svg = document.getElementById('graph');
+const world = document.getElementById('world');
+const edgesG = document.getElementById('edges');
+const depsG = document.getElementById('deps');
+const reposG = document.getElementById('repos');
+const targetsG = document.getElementById('targets');
+const gridG = document.getElementById('grid');
+
+// Draw background grid
+for (let x = 0; x <= 1700; x += 40) {
+    const l = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    l.setAttribute('x1', x); l.setAttribute('y1', 0);
+    l.setAttribute('x2', x); l.setAttribute('y2', 1050);
+    l.setAttribute('stroke', '#1e293b'); l.setAttribute('stroke-width', '0.5');
+    gridG.appendChild(l);
+}
+for (let y = 0; y <= 1050; y += 40) {
+    const l = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    l.setAttribute('x1', 0); l.setAttribute('y1', y);
+    l.setAttribute('x2', 1700); l.setAttribute('y2', y);
+    l.setAttribute('stroke', '#1e293b'); l.setAttribute('stroke-width', '0.5');
+    gridG.appendChild(l);
+}
+
+// Helper: create SVG element
+function el(tag, attrs, parent) {
+    const e = document.createElementNS('http://www.w3.org/2000/svg', tag);
+    for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v);
+    if (parent) parent.appendChild(e);
+    return e;
+}
+
+// Draw distribution edges (repo → target)
+const repoMap = Object.fromEntries(data.repos.map(r => [r.id, r]));
+const targetMap = Object.fromEntries(data.targets.map(t => [t.id, t]));
+
+data.distributions.forEach(([rid, tid]) => {
+    const r = repoMap[rid], t = targetMap[tid];
+    if (!r || !t) return;
+    const rw = Math.max(rid.length * 7, 100);
+    const sx = r.x + rw / 2 + 10, sy = r.y;
+    const ex = t.x - 50, ey = t.y;
+    const cx1 = sx + (ex - sx) * 0.35, cy1 = sy;
+    const cx2 = sx + (ex - sx) * 0.65, cy2 = ey;
+
+    const g = el('g', { class: 'edge', opacity: '0.25' }, edgesG);
+    el('path', {
+        d: `M${sx},${sy} C${cx1},${cy1} ${cx2},${cy2} ${ex},${ey}`,
+        fill: 'none',
+        stroke: t.color,
+        'stroke-width': '1.5',
+        'stroke-dasharray': 'none',
+        'marker-end': 'url(#arrow)',
+    }, g);
+    // Tooltip
+    el('title', {}, g).textContent = `${r.label} → ${t.label}`;
+});
+
+// Draw dependency edges (repo → repo)
+data.dependencies.forEach(dep => {
+    const from = repoMap[dep.from], to = repoMap[dep.to];
+    if (!from || !to) return;
+    const dx = to.x - from.x, dy = to.y - from.y;
+    const sx = from.x, sy = from.y;
+    const ex = to.x, ey = to.y;
+
+    // Offset control points perpendicular to the line for a nice arc
+    const len = Math.sqrt(dx*dx + dy*dy);
+    const nx = -dy / len * 30, ny = dx / len * 30;
+    const mx = (sx + ex) / 2 + nx, my = (sy + ey) / 2 + ny;
+
+    const g = el('g', { class: 'edge', opacity: '0.35' }, depsG);
+    el('path', {
+        d: `M${sx},${sy} Q${mx},${my} ${ex},${ey}`,
+        fill: 'none',
+        stroke: '#94a3b8',
+        'stroke-width': '1.2',
+        'stroke-dasharray': '5,4',
+        'marker-end': 'url(#arrow)',
+    }, g);
+
+    // Label on the edge
+    const lx = (sx + mx + ex) / 3, ly = (sy + my + ey) / 3;
+    el('text', {
+        x: lx, y: ly - 5,
+        'font-family': 'JetBrains Mono, monospace',
+        'font-size': '7',
+        fill: '#475569',
+        'text-anchor': 'middle',
+    }, g).textContent = dep.label;
+    el('title', {}, g).textContent = `${from.label} → ${to.label}: ${dep.label}`;
+});
+
+// Draw repo nodes
+data.repos.forEach(r => {
+    const g = el('g', { class: 'repo-node', transform: `translate(${r.x}, ${r.y})` }, reposG);
+    const w = Math.max(r.label.length * 8.5 + 20, 120);
+    const h = 32;
+    const lc = langColors[r.lang] || '#64748b';
+
+    // Card background
+    el('rect', {
+        x: -w/2, y: -h/2, width: w, height: h, rx: 6,
+        fill: '#1e293b', stroke: lc, 'stroke-width': '1.5',
+    }, g);
+
+    // Language indicator dot
+    el('circle', { cx: -w/2 + 10, cy: 0, r: 3, fill: lc }, g);
+
+    // Label
+    el('text', {
+        x: -w/2 + 20, y: 4,
+        'font-family': 'JetBrains Mono, monospace',
+        'font-size': '9.5',
+        fill: '#e2e8f0',
+    }, g).textContent = r.label;
+
+    // Tooltip
+    el('title', {}, g).textContent = r.desc;
+});
+
+// Draw target badges
+data.targets.forEach(t => {
+    const g = el('g', { class: 'target-badge', transform: `translate(${t.x}, ${t.y})` }, targetsG);
+    const w = Math.max(t.label.length * 9 + 24, 80);
+    const h = 30;
+
+    // Subtle glow
+    el('rect', {
+        x: -w/2 - 2, y: -h/2 - 2, width: w + 4, height: h + 4, rx: 8,
+        fill: t.color, opacity: '0.08',
+    }, g);
+
+    // Badge background
+    el('rect', {
+        x: -w/2, y: -h/2, width: w, height: h, rx: 6,
+        fill: t.color, opacity: '0.9',
+    }, g);
+
+    // Label
+    el('text', {
+        x: 0, y: 4,
+        'font-family': 'JetBrains Mono, monospace',
+        'font-size': '10',
+        fill: '#ffffff',
+        'text-anchor': 'middle',
+        'font-weight': '600',
+    }, g).textContent = t.label;
+
+    // Count connections
+    const count = data.distributions.filter(d => d[1] === t.id).length;
+    if (count > 1) {
+        el('text', {
+            x: w/2 + 8, y: -h/2 + 3,
+            'font-family': 'JetBrains Mono, monospace',
+            'font-size': '8',
+            fill: t.color,
+            'text-anchor': 'start',
+        }, g).textContent = `×${count}`;
+    }
+});
+
+// Legend
+const legendG = el('g', { transform: 'translate(1180, 680)' }, world);
+el('text', {
+    x: 0, y: 0,
+    'font-family': 'JetBrains Mono, monospace',
+    'font-size': '8',
+    fill: '#475569',
+    'letter-spacing': '0.1em',
+}, legendG).textContent = 'LANGUAGES';
+
+const langs = [
+    ['C# / .NET', langColors.csharp],
+    ['Python', langColors.python],
+    ['Go', langColors.go],
+    ['TypeScript', langColors.typescript],
+    ['GH Action', langColors.action],
+    ['DevContainer', langColors.devcontainer],
+];
+langs.forEach(([name, color], i) => {
+    el('circle', { cx: 8, cy: 20 + i * 18, r: 4, fill: color }, legendG);
+    el('text', {
+        x: 18, y: 24 + i * 18,
+        'font-family': 'JetBrains Mono, monospace',
+        'font-size': '8.5',
+        fill: '#94a3b8',
+    }, legendG).textContent = name;
+});
+
+el('text', {
+    x: 0, y: 145,
+    'font-family': 'JetBrains Mono, monospace',
+    'font-size': '8',
+    fill: '#475569',
+    'letter-spacing': '0.1em',
+}, legendG).textContent = 'EDGES';
+el('line', { x1: 0, y1: 163, x2: 30, y2: 163, stroke: '#94a3b8', 'stroke-width': '1.2', 'stroke-dasharray': '5,4' }, legendG);
+el('text', { x: 38, y: 167, 'font-family': 'JetBrains Mono, monospace', 'font-size': '8.5', fill: '#94a3b8' }, legendG).textContent = 'internal dependency';
+el('line', { x1: 0, y1: 181, x2: 30, y2: 181, stroke: '#3775A9', 'stroke-width': '1.5' }, legendG);
+el('text', { x: 38, y: 185, 'font-family': 'JetBrains Mono, monospace', 'font-size': '8.5', fill: '#94a3b8' }, legendG).textContent = 'ships to registry';
+
+// ── Pan & Zoom ──────────────────────────────────────────────────
+let scale = 1, panX = 0, panY = 0;
+let dragging = false, dragStartX = 0, dragStartY = 0, panStartX = 0, panStartY = 0;
+
+function applyTransform() {
+    world.setAttribute('transform', `translate(${panX},${panY}) scale(${scale})`);
+}
+
+const container = document.getElementById('container');
+
+container.addEventListener('wheel', e => {
+    e.preventDefault();
+    const rect = svg.getBoundingClientRect();
+    const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+
+    // Convert mouse position to SVG coordinates
+    const svgX = (mx / rect.width) * 1700;
+    const svgY = (my / rect.height) * 1050;
+
+    const oldScale = scale;
+    const delta = e.deltaY > 0 ? 0.9 : 1.1;
+    scale = Math.max(0.3, Math.min(5, scale * delta));
+
+    // Adjust pan so zoom centers on cursor
+    panX = svgX - (svgX - panX) * (scale / oldScale);
+    panY = svgY - (svgY - panY) * (scale / oldScale);
+
+    applyTransform();
+}, { passive: false });
+
+container.addEventListener('mousedown', e => {
+    dragging = true;
+    container.classList.add('dragging');
+    dragStartX = e.clientX;
+    dragStartY = e.clientY;
+    panStartX = panX;
+    panStartY = panY;
+});
+
+window.addEventListener('mousemove', e => {
+    if (!dragging) return;
+    const rect = svg.getBoundingClientRect();
+    const dx = (e.clientX - dragStartX) / rect.width * 1700;
+    const dy = (e.clientY - dragStartY) / rect.height * 1050;
+    panX = panStartX + dx;
+    panY = panStartY + dy;
+    applyTransform();
+});
+
+window.addEventListener('mouseup', () => {
+    dragging = false;
+    container.classList.remove('dragging');
+});
+
+container.addEventListener('dblclick', () => {
+    scale = 1; panX = 0; panY = 0;
+    applyTransform();
+});
+
+// Touch support
+let lastTouchDist = 0, lastTouchMid = null;
+container.addEventListener('touchstart', e => {
+    if (e.touches.length === 1) {
+        dragging = true;
+        dragStartX = e.touches[0].clientX;
+        dragStartY = e.touches[0].clientY;
+        panStartX = panX; panStartY = panY;
+    } else if (e.touches.length === 2) {
+        const dx = e.touches[0].clientX - e.touches[1].clientX;
+        const dy = e.touches[0].clientY - e.touches[1].clientY;
+        lastTouchDist = Math.sqrt(dx*dx + dy*dy);
+        lastTouchMid = { x: (e.touches[0].clientX + e.touches[1].clientX) / 2,
+                         y: (e.touches[0].clientY + e.touches[1].clientY) / 2 };
+    }
+}, { passive: true });
+
+container.addEventListener('touchmove', e => {
+    e.preventDefault();
+    if (e.touches.length === 1 && dragging) {
+        const rect = svg.getBoundingClientRect();
+        const dx = (e.touches[0].clientX - dragStartX) / rect.width * 1700;
+        const dy = (e.touches[0].clientY - dragStartY) / rect.height * 1050;
+        panX = panStartX + dx; panY = panStartY + dy;
+        applyTransform();
+    } else if (e.touches.length === 2 && lastTouchDist > 0) {
+        const dx = e.touches[0].clientX - e.touches[1].clientX;
+        const dy = e.touches[0].clientY - e.touches[1].clientY;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        scale = Math.max(0.3, Math.min(5, scale * (dist / lastTouchDist)));
+        lastTouchDist = dist;
+        applyTransform();
+    }
+}, { passive: false });
+
+container.addEventListener('touchend', () => { dragging = false; lastTouchDist = 0; });
+
+// Button controls
+document.getElementById('zoomIn').onclick = () => { scale = Math.min(5, scale * 1.2); applyTransform(); };
+document.getElementById('zoomOut').onclick = () => { scale = Math.max(0.3, scale / 1.2); applyTransform(); };
+document.getElementById('zoomReset').onclick = () => { scale = 1; panX = 0; panY = 0; applyTransform(); };
+
+// Highlight connected edges on repo hover
+document.querySelectorAll('.repo-node').forEach((node, i) => {
+    const repo = data.repos[i];
+    node.addEventListener('mouseenter', () => {
+        document.querySelectorAll('.edge').forEach(e => e.setAttribute('opacity', '0.06'));
+        // Find connected distribution edges
+        let idx = 0;
+        data.distributions.forEach((d, di) => {
+            if (d[0] === repo.id) {
+                edgesG.children[di]?.setAttribute('opacity', '0.8');
+            }
+        });
+        // Find connected dependency edges
+        data.dependencies.forEach((d, di) => {
+            if (d.from === repo.id || d.to === repo.id) {
+                depsG.children[di]?.setAttribute('opacity', '0.8');
+            }
+        });
+    });
+    node.addEventListener('mouseleave', () => {
+        edgesG.querySelectorAll('.edge').forEach(e => e.setAttribute('opacity', '0.25'));
+        depsG.querySelectorAll('.edge').forEach(e => e.setAttribute('opacity', '0.35'));
+    });
+});
+</script>
+</body>
+</html>
